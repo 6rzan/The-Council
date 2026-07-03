@@ -24,7 +24,7 @@ from council.agents.factchecker import build_claim_structurer, build_factchecker
 from council.agents.moderator import build_moderator, make_guard_callback
 from council.agents.panelist import build_panelist
 from council.agents.synthesizer import build_synthesizer
-from council.schemas.roster import PanelRoster
+from council.schemas.roster import Panelist
 
 
 async def _run(agent_name: str, message: str) -> int:
@@ -33,10 +33,8 @@ async def _run(agent_name: str, message: str) -> int:
     if agent_name == "moderator":
         agent = build_moderator(MODEL, guard_callback=make_guard_callback(message))
     elif agent_name == "panelist":
-        persona = PanelRoster.model_validate({
-            "panelists": [{"name": "Solo Panelist", "expertise": "generalist", "stance": "neutral",
-                           "recruitment_reason": "isolated test", "is_challenger": False}], "source": "recruited",
-        }).panelists[0]
+        persona = Panelist(name="Solo Panelist", expertise="generalist", stance="neutral",
+                           recruitment_reason="isolated test", is_challenger=False)
         agent = build_panelist(MODEL, persona=persona)
     elif agent_name == "factchecker":
         agent = build_factchecker(MODEL, toolset=build_factcheck_toolset())
