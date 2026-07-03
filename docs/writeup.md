@@ -1,8 +1,10 @@
 # The Council — Kaggle Submission Writeup
 
 **Track:** Freestyle (flagship demo questions flex toward *Agents for Good* /
-*Agents for Business*). **Status:** MVP complete; offline suite green (48
+*Agents for Business*). **Status:** MVP complete; offline suite green (50
 tests); live path verified component-by-component against the real Gemini API.
+
+**Demo video:** _link pending — added on publication (T048)._
 
 ## The problem
 

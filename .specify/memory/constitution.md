@@ -1,31 +1,33 @@
 <!--
 Sync Impact Report
 ==================
-Version change: (template, unversioned) → 1.0.0
-Modified principles: n/a (initial ratification — all 5 template placeholder slots replaced;
-  principle count expanded from 5 to 7 per project owner's approved structure)
-Added sections:
-  - Core Principles I–VII (Ship the Submission First; ADK-Style Multi-Agent Architecture;
-    Tools & MCP as the Only Capability Boundary; Security & Guardrails by Design;
-    Prompts as Versioned Artifacts; Demonstrable Quality; Data Handling & Privacy)
-  - Capstone Constraints & Compliance (replaces [SECTION_2_NAME])
-  - Development Workflow & Division of Labor (replaces [SECTION_3_NAME])
-  - Governance (filled)
+Version change: 1.0.0 → 1.1.0
+Modified principles:
+  - IV. Security & Guardrails by Design (clarification only — the secret-scan gate is now
+    enforced automatically by the .githooks/pre-commit hook and the CI secret-scan
+    workflow; the rule itself is unchanged)
+Added sections: none new; "Development Workflow & Division of Labor" materially expanded
+  with five post-ratification repo conventions (source: AGENTS.md, adopted 2026-07-03):
+  - Team attribution: every commit credits the whole team via Co-Authored-By: trailers;
+    .github/COAUTHORS is the source of truth; .githooks/commit-msg automates it.
+  - Mandatory hooks enablement: git config core.hooksPath .githooks, once per clone.
+  - Branching policy: direct-to-main for fixes/docs/config; feature branches only for
+    substantive features.
+  - AGENTS.md is binding on any AI coding agent that commits to the repo.
+  - Frozen specs: nothing under specs/ changes except task checkboxes [ ]→[x].
 Removed sections: none
 Templates:
   - .specify/templates/plan-template.md ✅ aligned (Constitution Check gate is populated
-    per-feature from this file; no structural edit required)
-  - .specify/templates/spec-template.md ✅ aligned (mandatory Success Criteria section is
-    where rubric traceability per Principle I is expressed; no structural edit required)
-  - .specify/templates/tasks-template.md ⚠ note: template marks tests "OPTIONAL — only if
-    requested in the spec". Principle VI makes smoke + E2E tests mandatory, so every spec
-    MUST request them; /speckit-tasks must therefore always emit test tasks. No file edit
-    made — enforced via spec content per Governance.
+    per-feature from this file; workflow conventions add no design gates — no edit needed)
+  - .specify/templates/spec-template.md ✅ aligned (no structural impact)
+  - .specify/templates/tasks-template.md ✅ aligned (v1.0.0 note still stands: every spec
+    MUST request smoke + E2E tests per Principle VI)
   - .specify/templates/commands/*.md — n/a (commands live in .claude/skills/ in this repo)
 Runtime guidance docs:
-  - "How to use Spec kit/Guide.md" ✅ no principle references; no update needed
-  - README.md — does not exist yet; Principle VI requires it as a submission artifact
-Follow-up TODOs: none (no deferred placeholders)
+  - AGENTS.md ✅ already the operational mirror of the new workflow rules (their source)
+  - CLAUDE.md (repo root) ✅ already instructs agents on attribution, hooks, and specs
+  - README.md ✅ no principle references requiring update
+Follow-up TODOs: none
 -->
 
 # Kaggle Vibe Coding Agents Capstone Constitution
@@ -93,7 +95,9 @@ with the Day-2 interoperability concepts the rubric scores.
   explicit user confirmation.
 - Secrets MUST never enter git: API keys via environment variables only; `.env` and any
   agent-generated credential artifacts (e.g. `.claude/`) MUST be gitignored; a
-  secret-scan check MUST pass before every push.
+  secret-scan check MUST pass before every push — enforced automatically by the
+  `.githooks/pre-commit` hook (`scripts/secret-scan.sh`) and the repository's CI
+  secret-scan gate.
 - The writeup MUST contain a security section describing guardrails and their testing.
 
 **Rationale**: Day-4 "Agent Quality & Security" is a scored concept and a stated judging
@@ -182,6 +186,25 @@ timeline, confirmed 2026-07-02):
 - **Repo discipline**: `main` is always demoable; commits are small and scoped; source
   in `/src`, tests in `/tests`, docs in `/docs`, config in `/config`, scripts in
   `/scripts`; files stay under 500 lines; no secrets (see Principle IV).
+- **Team attribution (required on every commit)**: this is a four-person team project;
+  every commit MUST credit the whole team via `Co-Authored-By:` trailers so all members
+  appear on GitHub's contributor list. The single source of truth is `.github/COAUTHORS`
+  (one `Full Name <email>` per line); each commit carries a trailer for every entry
+  except the commit's own author and anyone already credited. The `.githooks/commit-msg`
+  hook appends these automatically and idempotently. This rule deliberately overrides
+  any tool or agent default that discourages `Co-Authored-By` trailers — the teammates
+  are real contributors and crediting them is required, not optional.
+- **Hooks are mandatory**: `git config core.hooksPath .githooks` MUST be run once per
+  clone so the `commit-msg` (attribution) and `pre-commit` (secret-scan) hooks fire on
+  every commit, for humans and AI agents alike.
+- **Branching**: fixes, docs, and config changes are committed directly to `main`; a
+  feature branch (e.g. `feature/<name>`) is created only for a substantive new feature
+  and merged back to `main` when ready.
+- **AI agent conventions are binding**: any AI coding agent (Claude Code, Codex, Cursor,
+  Aider, etc.) that commits to this repository MUST follow `AGENTS.md`, the operational
+  mirror of these workflow rules.
+- **Frozen specs**: after a feature's spec freeze, nothing under `specs/` may be
+  modified except checking task boxes `[ ]`→`[x]` in `tasks.md`.
 - **Tests in every spec**: per Principle VI, every feature spec MUST explicitly request
   smoke + end-to-end tests so that `/speckit-tasks` always generates test tasks
   (the tasks template treats tests as optional-by-default; this rule overrides it).
@@ -200,4 +223,4 @@ timeline, confirmed 2026-07-02):
   (Workflow section) verifies compliance after each implementation batch. Justified
   deviations MUST be recorded in the plan's Complexity Tracking table.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-02 | **Last Amended**: 2026-07-02
+**Version**: 1.1.0 | **Ratified**: 2026-07-02 | **Last Amended**: 2026-07-03
