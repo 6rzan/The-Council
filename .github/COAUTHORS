@@ -1,0 +1,9 @@
+# The Council — co-author registry (single source of truth).
+# Every commit in this repo credits the whole team via Co-Authored-By trailers.
+# The .githooks/commit-msg hook reads this file and appends a trailer for each
+# entry below (skipping the commit's own author, and skipping anyone already
+# credited). Format: Full Name <email>
+Tahaf <tahafahd40@gmail.com>
+Esam Alareqi <esammostafa9@gmail.com>
+Kamila Ayub Khan <kamil.ayub.khan@gmail.com>
+Ahmad Hemedany <ahemedany@hotmail.com>

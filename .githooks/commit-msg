@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# commit-msg hook: auto-credit the project team on every commit.
+#
+# Reads .github/COAUTHORS and appends a `Co-Authored-By:` trailer for each
+# listed teammate, skipping the commit's own author and anyone already credited
+# in the message (idempotent — safe to run repeatedly, never duplicates).
+#
+# Runs for ANY committer — human or AI coding agent — once
+# `git config core.hooksPath .githooks` is set (run that once after cloning).
+# Pure bash builtins (no grep/pipelines) so it's fast and portable.
+set -u
+
+msg_file="$1"
+root="$(git rev-parse --show-toplevel)"
+coauthors="$root/.github/COAUTHORS"
+[ -f "$coauthors" ] || exit 0
+
+author_email="${GIT_AUTHOR_EMAIL:-}"
+msg="$(cat "$msg_file")"
+
+trailers=""
+while IFS= read -r line || [ -n "$line" ]; do
+  # skip blank / comment lines
+  case "$line" in "" | \#*) continue ;; esac
+  # parse "Full Name <email>"
+  email="${line##*<}"; email="${email%%>*}"
+  [ -z "$email" ] && continue
+  # skip the commit's own author (already credited as the commit author)
+  [ "$email" = "$author_email" ] && continue
+  # skip if this email is already mentioned anywhere in the message (idempotent)
+  [[ $msg == *"$email"* ]] && continue
+  trailers+="Co-Authored-By: $line
+"
+done < "$coauthors"
+
+if [ -n "$trailers" ]; then
+  # message body, blank line separator, then the trailers
+  printf '%s\n\n%s' "$msg" "$trailers" > "$msg_file"
+fi
+exit 0
