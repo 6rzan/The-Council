@@ -43,7 +43,7 @@ green (FR-014, Principle VI). Fallback-roster path has its own test (FR-016).
 **Target Platform**: Local cross-platform web app (Windows/macOS/Linux) — `council` starts a
 localhost server and opens the browser; Python 3.11 runtime.
 
-**Project Type**: Single project — multi-agent CLI application.
+**Project Type**: Single project — multi-agent local web application.
 
 **Performance Goals**: A full deliberation (recruit → ~2 rounds × ~3 panelists → fact-check →
 synthesis) completes well within the 2-minute demo window (SC-008); default model
@@ -157,7 +157,7 @@ scripts/
 docs/
 ```
 
-**Structure Decision**: Single-project multi-agent CLI. The three constitutional layers are
+**Structure Decision**: Single-project multi-agent web app. The three constitutional layers are
 physically separated: **agents/** (reasoning), **tools/** (capability, incl. the MCP server), and
 **orchestration/ + web/** (app shell / I/O). `guardrails/` holds the ADK callbacks. `schemas/`
 centralizes the Pydantic structured-output contracts so every machine-consumed output is typed.

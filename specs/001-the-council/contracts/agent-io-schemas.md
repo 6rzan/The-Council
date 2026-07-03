@@ -11,7 +11,7 @@ returns free-form evidence that a separate no-tool step maps into `Claim`s.
 - **In**: `Question.text` (untrusted).
 - **Out**: `{ allowed: bool, refusal_reason: str | None }`.
 - **Behavior**: implemented as `before_agent_callback` / validators; on `allowed=false` the run
-  short-circuits with a visible refusal card and exit code 2 (no panel runs). Neutralizes prompt
+  short-circuits with a visible refusal card in the UI (an SSE `refusal` event; no panel runs). Neutralizes prompt
   injection (treats embedded instructions as content, never as commands).
 
 ### 2. Recruit step (structured)
@@ -57,4 +57,4 @@ returns free-form evidence that a separate no-tool step maps into `Claim`s.
 
 Recruit → `recruit`; each Panelist turn → `turn`; each MCP call → `tool_call`; each guardrail
 decision → `guardrail`; fallback substitution → `fallback`; synthesis → `synthesize`. The ordered
-`DeliberationTrace` is the observability artifact (FR-008) and streams live in the CLI.
+`DeliberationTrace` is the observability artifact (FR-008) and streams live to the web UI via SSE.

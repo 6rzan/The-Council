@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "council"
+version = "0.1.0"
+description = "The Council — A Self-Assembling Deliberation Engine (Google + Kaggle AI Agents capstone)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "The Council" }]
+dependencies = [
+    "google-adk==2.3.0",
+    "google-genai==2.10.0",
+    "mcp==1.28.1",
+    "httpx==0.28.1",
+    "pydantic==2.13.4",
+    "fastapi==0.138.2",
+    "uvicorn==0.49.0",
+    "python-dotenv==1.2.2",
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.1.1", "pytest-asyncio==1.4.0"]
+
+[project.scripts]
+council = "council.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"council" = ["agents/instructions/*.md", "web/static/*.html"]
+
+# ---- Tooling config (T004) ----
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "live: opt-in tests that hit real Gemini + Wikipedia (requires GOOGLE_API_KEY; deselect with -m 'not live')",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["specs", ".specify", "graphify-out"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]

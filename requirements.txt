@@ -1,0 +1,12 @@
+# Pinned dependencies for The Council (specs/001-the-council/plan.md)
+# No dependencies beyond this list (constitution Principle I/III).
+google-adk==2.3.0
+google-genai==2.10.0
+mcp==1.28.1
+httpx==0.28.1
+pydantic==2.13.4
+fastapi==0.138.2
+uvicorn==0.49.0
+python-dotenv==1.2.2
+pytest==9.1.1
+pytest-asyncio==1.4.0

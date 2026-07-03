@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Pre-commit hook: run the secret-scan gate on staged files (Constitution IV).
+# Install once with: git config core.hooksPath .githooks
+exec "$(git rev-parse --show-toplevel)/scripts/secret-scan.sh" --staged

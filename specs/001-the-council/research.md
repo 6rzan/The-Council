@@ -88,14 +88,20 @@ Alternatives considered**. These decisions are binding inputs to Phase 1 and to 
 - **Alternatives**: A dedicated Referee LLM agent — pushes specialist count to 4+ and adds latency
   for logic that is largely deterministic classification.
 
-## R8. Streaming terminal UI (FR-017)
+## R8. Streaming web UI (FR-017) *(revised 2026-07-03 — supersedes the earlier `rich` CLI decision)*
 
-- **Decision**: **`rich`** — live panels/spinners/tables stream panel assembly, each debate turn,
-  fact-checks, and the final Verdict Brief as they happen.
-- **Rationale**: The live transcript *is* the visual for the 2-minute video (SC-008); `rich` is
-  lightweight and cross-platform.
-- **Alternatives**: Plain `print` — least impressive. `textual` — a full TUI framework, heavier
-  than needed for a linear stream. Web UI — deferred to P3 bonus per clarification.
+- **Decision**: **FastAPI + uvicorn** serving one **self-contained `index.html`** (inline
+  CSS/JS, no build step, no CDN); the deliberation streams over **Server-Sent Events** whose
+  event kinds map 1:1 to `TraceEvent` kinds (recruit / turn / tool_call / guardrail /
+  synthesize / fallback / error) plus terminal `verdict`, `refusal`, and `clarify` events.
+- **Rationale**: A browser debate view screencasts far better for the 2-minute video (SC-008)
+  and makes the observability trace visible as UI. SSE is native to browsers (`EventSource`)
+  and to FastAPI — no websocket complexity. A single static page keeps stranger
+  reproducibility at `pip install` + one command (FR-015) and every file under 500 lines.
+- **Alternatives**: `rich` terminal CLI — the original decision; superseded by project-owner
+  choice of a web surface. Streamlit/Gradio — faster to scaffold but poor control over the
+  multi-panel cinematic debate layout. React/Vite — a JS build chain adds reproducibility and
+  timeline risk for zero judged benefit.
 
 ## R9. Sessions / memory (P2, course concept)
 
@@ -116,7 +122,7 @@ Alternatives considered**. These decisions are binding inputs to Phase 1 and to 
 | Agent-to-agent communication | Panelists rebut each other across rounds over shared transcript |
 | Context engineering (sessions/memory) | `InMemorySessionService` state; P2 follow-ups |
 | Guardrails & security | ADK callbacks: validation, refusal, injection neutralization, claim striking |
-| Observability | Structured `DeliberationTrace` + streamed CLI + ADK events |
+| Observability | Structured `DeliberationTrace` + live web trace panel + ADK events |
 | (Bonus) Effective Gemini use | `gemini-2.5-flash` with structured outputs/function calling |
 | (Bonus) Deployment | Optional Cloud Run (P3) |
 

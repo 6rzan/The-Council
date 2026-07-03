@@ -1,0 +1,18 @@
+# Build context exclusions (Constitution IV — never bake secrets into an image).
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+.github
+.githooks
+.venv
+venv
+env
+__pycache__/
+*.pyc
+.pytest_cache
+.ruff_cache
+.graphify-out
+*.log
+tmp/

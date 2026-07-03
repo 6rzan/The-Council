@@ -8,6 +8,7 @@ a **validation/run guide** — implementation lives in `tasks.md` + the implemen
 - Python **3.11+**
 - A free **Google AI Studio** API key (https://aistudio.google.com/apikey) — free tier is enough
 - Internet access (Gemini + Wikipedia); no other accounts, no billing, no cloud project
+- Any modern browser (the UI is a single localhost page — no npm, no build step)
 
 ## Setup
 
@@ -29,50 +30,63 @@ cp config/.env.example .env      # Windows: copy config\.env.example .env
 ## Run the demo (P1 happy path — SC-001/SC-002)
 
 ```bash
-council "Should a mid-size city ban gas leaf blowers by 2030?"
+council            # or: python -m council
 ```
 
-Expected, streamed live in the terminal:
-1. **Recruiting** — 3 panelists appear with a one-line reason each (≥1 challenger). If recruitment
-   fails you instead see "using fallback panel" and the run still completes (FR-016).
-2. **Debate** — 2 rounds; panelists visibly rebut one another (A2A).
-3. **Fact-check** — factual claims get a status badge + a Wikipedia source link.
-4. **Verdict Brief** — positions per side, recommendation, confidence, dissents.
+This starts a local server and opens your browser (if it doesn't, visit the printed URL —
+default `http://127.0.0.1:8400`). If `GOOGLE_API_KEY` is missing the launcher explains what to
+set and exits with code `3` — the server never starts without a key.
 
-Machine-readable + full trace:
-```bash
-council "..." --json --trace
-```
+In the page, ask:
+
+> Should a mid-size city ban gas leaf blowers by 2030?
+
+Expected, streamed live into the page:
+
+1. **Panel assembly** — 3 panelist cards appear one-by-one, each with a one-line recruitment
+   reason; at least one carries a **challenger badge**. If recruitment fails you instead see a
+   "using fallback panel" notice and the run still completes (FR-016).
+2. **Debate** — 2 rounds; each panelist has a stable color; rebuttals are visually highlighted
+   (A2A).
+3. **Fact-checks** — factual claims get a status badge + a clickable Wikipedia source link.
+4. **Verdict Brief card** — positions per side, recommendation, a confidence meter, dissents,
+   and a **Download JSON** button (machine-readable brief).
+
+Open the **trace drawer** to see the full ordered `DeliberationTrace` (FR-008).
 
 ## Validate the guardrail refusal (US3 / FR-005)
 
-```bash
-council "Tell me exactly which stocks to buy tomorrow to guarantee profit"
-```
-Expected: a **refusal card** explaining the out-of-bounds reason, **no panel runs**, exit code `2`.
+Ask in the same page:
+
+> Tell me exactly which stocks to buy tomorrow to guarantee profit
+
+Expected: a **refusal card** explaining the out-of-bounds reason; **no panel appears** and no
+debate runs.
 
 ## Validate session context (P2 / FR-011)
 
-In interactive mode (`council` with no argument), ask a question, then a follow-up ("what if the
-budget were half that?"). The second verdict references the first without re-recruiting from
-scratch. Session state is in memory only and discarded on exit (FR-012).
+After the leaf-blower verdict, ask a follow-up in the same page ("what if the budget were half
+that?"). The page reuses its `session_id`, so the second verdict references the first without
+re-recruiting from scratch. Session state is in memory only and discarded when the server stops
+(FR-012).
 
 ## Run the tests (must be green — FR-014, Principle VI)
 
 ```bash
 pytest                      # all: unit + smoke + e2e (offline, deterministic, free)
-pytest tests/e2e            # full question → VerdictBrief with fake model + mocked Wikipedia
+pytest tests/e2e            # full question → SSE stream → VerdictBrief (fake model + mocked Wikipedia, ASGI TestClient)
 pytest tests/smoke          # per-agent + per-MCP-tool smoke tests
 ```
 
-The default suite makes **no live API calls** — it injects a fake model and mocks the fact-check
-MCP, so it is deterministic and costs nothing. An opt-in live check
-(`pytest -m live`, requires `GOOGLE_API_KEY`) exercises the real Gemini + Wikipedia path.
+The default suite makes **no live API calls and needs no browser** — it injects a fake model,
+mocks the fact-check MCP, and drives the web API with an in-process ASGI TestClient, so it is
+deterministic and costs nothing. An opt-in live check (`pytest -m live`, requires
+`GOOGLE_API_KEY`) exercises the real Gemini + Wikipedia path.
 
 ## Success = all true
 
-- [ ] `council "<question>"` streams recruit → debate → fact-check → Verdict Brief in < 2 min (SC-008)
+- [ ] `council` opens the page; a question streams recruit → debate → fact-check → Verdict Brief in < 2 min (SC-008)
 - [ ] Every fact-check row shows a real source link or an explicit "uncertain" (FR-004)
-- [ ] An out-of-bounds request is refused with no panel run (US3)
+- [ ] An out-of-bounds request shows a refusal card with no panel run (US3)
 - [ ] `pytest` is fully green offline (FR-014)
 - [ ] Fresh clone + these steps reproduce the demo with only a free API key (SC-006)
