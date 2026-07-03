@@ -1,12 +1,33 @@
 # The Council — A Self-Assembling Deliberation Engine
 
-A multi-agent system that **recruits an expert panel, debates across rounds,
-fact-checks claims against Wikipedia via MCP, and produces a Verdict Brief** —
-all streamed live to a self-contained web UI. Built on Google ADK + Gemini,
-with no frontend build step and no paid services.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
+[![Google ADK](https://img.shields.io/badge/Google%20ADK-2.3.0-orange.svg)](https://google.github.io/adk-docs/)
+[![MCP](https://img.shields.io/badge/MCP-1.28.1-green.svg)](https://modelcontextprotocol.io/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.138-009688.svg)](https://fastapi.tiangolo.com/)
+[![model: gemini-2.5-flash](https://img.shields.io/badge/model-gemini--2.5--flash-4285F4.svg)](https://ai.google.dev/)
+[![tests: 50 offline](https://img.shields.io/badge/tests-50%20offline-brightgreen.svg)](#run-the-tests-must-be-green-offline--fr-014)
 
-> Ask a question → the Council assembles a bespoke panel → they debate → claims
-> are fact-checked → you get a balanced verdict with cited sources.
+> **Ask a question → the Council assembles a bespoke expert panel → they debate
+> across rounds → claims are fact-checked against Wikipedia via MCP → you get a
+> balanced Verdict Brief with cited sources** — all streamed live to a
+> self-contained web UI. No frontend build step, no paid services.
+
+### Highlights
+
+- 🤖 **Multi-agent orchestration** — Moderator, Panelists, Fact-Checker &
+  Synthesizer on Google ADK, driven by a bounded deliberation loop.
+- 🔌 **Genuine MCP integration** — a local stdio fact-check server
+  (`MCPToolset`) grounds claims in keyless Wikipedia.
+- 🛡️ **Guardrails by design** — an ADK callback refuses regulated advice,
+  unsafe content & prompt-injection *before any panel runs*.
+- 🧠 **Session memory** — follow-ups build on prior verdicts via
+  `InMemorySessionService` (in-memory only, nothing persisted).
+- 📡 **Live SSE streaming** — every event flows to a self-contained UI (inline
+  CSS/JS, no CDN) with an ordered trace drawer.
+- 🧩 **Structured outputs** — typed `PanelRoster`, `PanelistTurn`, `Claim` &
+  `VerdictBrief` end-to-end (ADK R6 gotcha handled).
+- ✅ **50 offline tests** — deterministic; no API key or browser required.
 
 ```
  ┌──────────┐   ┌────────────┐   ┌───────────────┐   ┌────────────┐   ┌────────────┐
@@ -186,6 +207,16 @@ tests/                       unit + smoke + e2e (offline, fake model + mocked MC
 - **Wikipedia-only** fact-check source (by design — keyless, reproducible).
 - **Localhost only** — the server binds `127.0.0.1`; not production-deployed
   (a `Dockerfile`/Cloud Run path is sketched as an optional post-freeze task).
+
+## Team
+
+Built by a three-person team for the **Google + Kaggle 5-Day AI Agents**
+capstone. The system was designed collaboratively; implementation, integration,
+and tooling were led by Tahaf.
+
+- **Tahaf** — Team Lead & Lead Developer · GitHub [@6rzan](https://github.com/6rzan) · Kaggle [tahafahdthabit](https://www.kaggle.com/tahafahdthabit)
+- **Esam Alareqi** — Contributor · GitHub [@esammostafa9-cloud](https://github.com/esammostafa9-cloud) · Kaggle [esamalareqi](https://www.kaggle.com/esamalareqi)
+- **Kamila Ayub Khan** — Contributor · GitHub [@Slimyzz](https://github.com/Slimyzz) · Kaggle [kamilayubkhan](https://www.kaggle.com/kamilayubkhan)
 
 ## License
 
