@@ -4,147 +4,110 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Council — A Self-Assembling Deliberation Engine</title>
-<style>
-  :root{
-    --bg:#0d1117;--panel:#161b22;--ink:#e6edf3;--muted:#8b949e;--accent:#58a6ff;
-    --green:#3fb950;--amber:#d29922;--red:#f85149;--border:#30363d;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    background:var(--bg);color:var(--ink);line-height:1.5}
-  header{padding:18px 22px;border-bottom:1px solid var(--border)}
-  header h1{margin:0;font-size:20px;font-weight:600}
-  header p{margin:4px 0 0;color:var(--muted);font-size:13px}
-  main{max-width:920px;margin:0 auto;padding:22px}
-  .bar{display:flex;gap:8px;margin-bottom:18px}
-  .bar input{flex:1;padding:11px 12px;background:var(--panel);border:1px solid var(--border);
-    border-radius:8px;color:var(--ink);font-size:14px}
-  .bar button{padding:11px 18px;background:var(--accent);color:#000;border:0;border-radius:8px;
-    font-weight:600;cursor:pointer}
-  .bar button:disabled{opacity:.5;cursor:not-allowed}
-  .bar .opts{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:12px}
-  .bar .opts input{width:46px;padding:6px;text-align:center}
-  section{margin-bottom:22px}
-  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
-  .card .name{font-weight:600}
-  .card .meta{font-size:12px;color:var(--muted);margin:3px 0}
-  .badge{display:inline-block;font-size:11px;padding:2px 7px;border-radius:10px;
-    background:var(--amber);color:#000;font-weight:600;margin-top:6px}
-  .notice{background:#1f1a2e;border:1px solid #6e40b1;color:#d2a8ff;padding:10px 12px;border-radius:8px;font-size:13px}
-  .turn{border-left:3px solid var(--border);padding:8px 12px;margin-bottom:8px;border-radius:0 6px 6px 0}
-  .turn .who{font-size:12px;color:var(--muted)}
-  .turn.rebuttal{border-left-color:var(--accent);background:#0d2233}
-  .round-label{font-size:12px;color:var(--muted);margin:12px 0 6px;border-top:1px dashed var(--border);padding-top:8px}
-  .claim{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:13px}
-  .status{font-size:11px;padding:1px 7px;border-radius:10px;font-weight:600}
-  .status.supported{background:var(--green);color:#000}
-  .status.unsupported{background:var(--red);color:#000}
-  .status.uncertain{background:var(--amber);color:#000}
-  .verdict{background:linear-gradient(180deg,#1a2233,#161b22);border:1px solid var(--accent);border-radius:12px;padding:18px}
-  .meter{height:10px;background:var(--border);border-radius:6px;overflow:hidden;margin:6px 0}
-  .meter i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--amber),var(--green))}
-  .dl{margin-top:10px;padding:8px 12px;background:#21262d;border:1px solid var(--border);border-radius:8px;color:var(--ink);cursor:pointer;font-size:13px}
-  .refusal{background:#2a1414;border:1px solid var(--red);color:#ffd0d0;padding:16px;border-radius:10px}
-  .clarify{background:#2a2314;border:1px solid var(--amber);color:#ffe9c2;padding:16px;border-radius:10px}
-  details.trace{margin-top:18px;border:1px solid var(--border);border-radius:8px;background:var(--panel)}
-  details.trace summary{padding:10px 12px;cursor:pointer;font-size:13px;color:var(--muted)}
-  .trace-event{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;padding:2px 12px;color:var(--muted)}
-  .trace-event b{color:var(--ink);font-weight:600}
-  .hidden{display:none}
-  a{color:var(--accent)}
-</style>
+<link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <header>
-  <h1>The Council</h1>
-  <p>A self-assembling deliberation engine — it recruits its own expert panel, debates, fact-checks, and delivers a Verdict Brief.</p>
+  <div class="brand">
+    <h1>The Council</h1>
+    <p>It recruits its own expert panel, debates, fact-checks, and delivers a Verdict Brief.</p>
+  </div>
+  <div class="spacer"></div>
+  <span id="chip" class="chip hidden"><span class="dot"></span><b id="chip-provider">—</b><span class="model" id="chip-model"></span></span>
+  <button id="open-settings" class="btn">⚙ Settings</button>
 </header>
+
 <main>
-  <div class="bar">
+  <!-- Get-started (shown when no provider is configured) -->
+  <section id="getstarted" class="getstarted hidden">
+    <h2>Welcome to The Council</h2>
+    <p>To begin, choose an AI provider and add a key. Google Gemini, OpenAI, Anthropic,
+       OpenCode Zen, or any OpenAI-compatible endpoint all work — your key stays in memory
+       and is never written to disk.</p>
+    <p id="getstarted-extra" class="hidden"></p>
+    <button id="getstarted-btn" class="btn primary">Open Settings to get started</button>
+  </section>
+
+  <!-- Question bar -->
+  <div id="bar" class="bar hidden">
     <input id="q" placeholder="Ask a hard question, e.g. Should a mid-size city ban gas leaf blowers by 2030?" autofocus>
-    <div class="opts"><label>Rounds<input id="rounds" type="number" value="2" min="1" max="2"></label><label>Panel<input id="panel" type="number" value="3" min="2" max="4"></label></div>
-    <button id="ask">Convene</button>
+    <div class="opts">
+      <label>Rounds<input id="rounds" type="number" value="2" min="1" max="2"></label>
+      <label>Panel<input id="panel" type="number" value="3" min="2" max="4"></label>
+    </div>
+    <button id="ask" class="btn primary">Convene</button>
+  </div>
+  <div id="run-hint" class="hint-line hidden"></div>
+
+  <!-- Stage timeline -->
+  <div id="timeline" class="timeline hidden">
+    <div class="step" data-stage="recruit"><div class="ic">1</div><div class="lbl">Assembling panel</div></div>
+    <div class="step" data-stage="debate"><div class="ic">2</div><div class="lbl">Debate</div></div>
+    <div class="step" data-stage="factcheck"><div class="ic">3</div><div class="lbl">Fact-check</div></div>
+    <div class="step" data-stage="synth"><div class="ic">4</div><div class="lbl">Synthesis</div></div>
+    <div class="step" data-stage="verdict"><div class="ic">5</div><div class="lbl">Verdict</div></div>
   </div>
 
-  <section id="refusal-sec" class="hidden"><div class="refusal" id="refusal"></div></section>
-  <section id="clarify-sec" class="hidden"><div class="clarify" id="clarify"></div></section>
+  <!-- Terminal cards -->
+  <section id="refusal-sec" class="hidden"><div id="refusal-card" class="terminal refusal"></div></section>
+  <section id="clarify-sec" class="hidden"><div id="clarify-card" class="terminal clarify"></div></section>
+  <section id="error-sec" class="hidden"><div id="error-card" class="terminal error"></div></section>
 
+  <!-- Live deliberation -->
   <section id="panel-sec" class="hidden">
-    <h2>Panel assembly</h2>
+    <h2 class="sec">Panel assembly</h2>
     <div id="notice" class="notice hidden"></div>
     <div class="grid" id="panel"></div>
   </section>
 
-  <section id="debate-sec" class="hidden"><h2>Debate</h2><div id="debate"></div></section>
-  <section id="facts-sec" class="hidden"><h2>Fact-checks</h2><div id="facts"></div></section>
-  <section id="verdict-sec" class="hidden"><h2>Verdict Brief</h2><div id="verdict" class="verdict"></div></section>
+  <section id="debate-sec" class="hidden"><h2 class="sec">Debate</h2><div id="debate"></div></section>
+  <section id="facts-sec" class="hidden"><h2 class="sec">Fact-checks</h2><div id="facts"></div></section>
+  <section id="verdict-sec" class="hidden"><h2 class="sec">Verdict Brief</h2><div id="verdict" class="verdict"></div></section>
 
   <details class="trace"><summary>Deliberation trace</summary><div id="trace"></div></details>
 </main>
 
-<script>
-const COLORS=["#58a6ff","#3fb950","#d29922","#f778ba"];
-const $=id=>document.getElementById(id);
-let sessionId=crypto.randomUUID();
-const colorFor=(name)=>{if(!(name in colorFor.m))colorFor.m[name]=COLORS[Object.keys(colorFor.m).length%COLORS.length];return colorFor.m[name];};
-colorFor.m={};
-function reset(){["refusal","clarify","panel","debate","facts","verdict"].forEach(k=>$(k).innerHTML="");
-  ["refusal-sec","clarify-sec","panel-sec","debate-sec","facts-sec","verdict-sec"].forEach(k=>$(k).classList.add("hidden"));
-  $("notice").classList.add("hidden");$("trace").innerHTML="";colorFor.m={};}
-function esc(s){return String(s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+<!-- Settings slide-over -->
+<div id="overlay" class="overlay hidden"></div>
+<aside id="settings" class="settings hidden">
+  <button id="close-settings" class="close-x" aria-label="Close">×</button>
+  <h2>Model &amp; Provider</h2>
+  <p class="sub">Pick a provider and model, then add a key. The active choice powers every
+     role in the next deliberation.</p>
 
-function onRecruit(d){$("panel-sec").classList.remove("hidden");const p=d.panelist;
-  const c=`<div class="card" style="border-top:3px solid ${colorFor(p.name)}"><div class="name">${esc(p.name)}</div><div class="meta">${esc(p.expertise)} · ${esc(p.stance)}</div><div class="meta">${esc(p.recruitment_reason)}</div>${p.is_challenger?'<span class="badge"> Challenger</span>':''}</div>`;
-  $("panel").insertAdjacentHTML("beforeend",c);}
-function onFallback(d){$("panel-sec").classList.remove("hidden");$("notice").classList.remove("hidden");
-  $("notice").textContent="Using fallback panel — live recruitment failed, so a deterministic roster was substituted (FR-016). The run still completes.";
-  d.roster.panelists.forEach(p=>onRecruit({panelist:p}));}
-function onTurn(d){$("debate-sec").classList.remove("hidden");
-  const lbl=`<div class="round-label">Round ${d.round}</div>`;
-  if(!$("debate").querySelector(`[data-round="${d.round}"]`)){$("debate").insertAdjacentHTML("beforeend",`<div data-round="${d.round}">${lbl}</div>`);}
-  const t=`<div class="turn${d.references_prior?' rebuttal':''}" style="border-left-color:${d.references_prior?'var(--accent)':colorFor(d.panelist_name)}"><div class="who">${esc(d.panelist_name)}${d.references_prior?' · rebuttal':''}</div><div>${esc(d.content)}</div></div>`;
-  $("debate").querySelector(`[data-round="${d.round}"]`).insertAdjacentHTML("beforeend",t);}
-function onToolCall(d){$("facts-sec").classList.remove("hidden");}
-function onGuardrail(d){}
-function onSynthesize(){}
-function onClaimRow(c){$("facts-sec").classList.remove("hidden");
-  const link=c.source_url?` · <a href="${esc(c.source_url)}" target="_blank" rel="noopener">${esc(c.source_title||"source")}</a>`:"";
-  const row=`<div class="claim"><span class="status ${c.status}">${c.status}</span><div>${esc(c.text)}${link}</div></div>`;
-  $("facts").insertAdjacentHTML("beforeend",row);}
-function onVerdict(d){$("verdict-sec").classList.remove("hidden");const v=d;
-  const pct={high:100,medium:60,low:30}[v.confidence]||30;
-  let pos=v.positions.map(p=>`<div style="margin-bottom:8px"><b>${esc(p.label)}:</b> ${esc(p.strongest_argument)}</div>`).join("");
-  let fc=(v.fact_checks||[]).map(onClaimRow).join("");
-  let dis=(v.dissents||[]).map(x=>`<li>${esc(x.panelist_name)}: ${esc(x.objection)}</li>`).join("");
-  $("verdict").innerHTML=`<div style="font-size:12px;color:var(--muted)">Question</div><div style="margin-bottom:10px">${esc(v.question)}</div>
-    <div style="font-size:12px;color:var(--muted)">Positions</div>${pos}
-    <div style="font-size:12px;color:var(--muted);margin-top:8px">Recommendation</div><div style="margin-bottom:6px">${esc(v.recommendation)}</div>
-    <div style="font-size:12px;color:var(--muted)">Confidence: <b>${v.confidence}</b></div><div class="meter"><i style="width:${pct}%"></i></div>
-    ${dis?`<div style="font-size:12px;color:var(--muted);margin-top:8px">Dissents</div><ul>${dis}</ul>`:""}
-    <button class="dl" id="dl">Download JSON</button>`;
-  $("dl").onclick=()=>{const b=new Blob([JSON.stringify(v,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="council-verdict.json";a.click();};
-  (v.fact_checks||[]).forEach(onClaimRow);}
-function onRefusal(d){$("refusal-sec").classList.remove("hidden");$("refusal").textContent=d.reason;}
-function onClarify(d){$("clarify-sec").classList.remove("hidden");$("clarify").textContent=d.question_back;$("q").focus();}
-function onTrace(kind,actor,detail){$("trace").insertAdjacentHTML("beforeend",`<div class="trace-event"><b>${kind}</b> ${esc(actor||"")} ${esc(detail||"")}</div>`);}
+  <div id="p-error" class="form-error hidden"></div>
 
-function stream(question){
-  reset();$("ask").disabled=true;
-  const url=`/api/deliberate/stream?question=${encodeURIComponent(question)}&rounds=${$("rounds").value}&panel=${$("panel").value}&session_id=${encodeURIComponent(sessionId)}`;
-  const es=new EventSource(url);
-  const handlers={recruit:onRecruit,fallback:onFallback,turn:onTurn,tool_call:onToolCall,guardrail:onGuardrail,synthesize:onSynthesize,error:()=>{},verdict:onVerdict,refusal:onRefusal,clarify:onClarify};
-  ["recruit","fallback","turn","tool_call","guardrail","synthesize","error","verdict","refusal","clarify"].forEach(k=>{
-    es.addEventListener(k,e=>{let d={};try{d=JSON.parse(e.data)}catch(_){}
-      if(handlers[k])handlers[k](d);onTrace(k,d.panelist?d.panelist.name:d.panelist_name||d.tool||d.rule||"",d.reason||d.question_back||d.outcome||d.detail||(d.roster?"fallback roster":""));
-      if(k==="verdict"||k==="refusal"||k==="clarify"){es.close();$("ask").disabled=false;}
-    });
-  });
-  es.onerror=()=>{es.close();$("ask").disabled=false;};
-}
-$("ask").onclick=()=>{const q=$("q").value.trim();if(q)stream(q);};
-$("q").addEventListener("keydown",e=>{if(e.key==="Enter")$("ask").click();});
-</script>
+  <div class="field">
+    <label for="p-provider">Provider</label>
+    <select id="p-provider"></select>
+  </div>
+
+  <div class="field">
+    <label for="p-model">Model</label>
+    <select id="p-model"></select>
+  </div>
+  <div class="field hidden" id="p-model-custom-field">
+    <label for="p-model-custom">Model name</label>
+    <input id="p-model-custom" placeholder="Type any model the provider accepts">
+  </div>
+
+  <div class="field hidden" id="p-baseurl-field">
+    <label for="p-baseurl">Base URL (OpenAI-compatible endpoint)</label>
+    <input id="p-baseurl" placeholder="OpenAI-compatible endpoint URL">
+  </div>
+
+  <div class="field">
+    <label for="p-key">API key</label>
+    <input id="p-key" type="password" placeholder="Paste your key — held in memory only">
+    <div id="p-env" class="env-badge hidden" style="margin-top:8px">✓ configured via environment</div>
+  </div>
+
+  <div class="row">
+    <button id="p-save" class="btn primary">Save</button>
+    <button id="p-cancel" class="btn">Cancel</button>
+  </div>
+</aside>
+
+<script src="/static/app.js"></script>
 </body>
 </html>

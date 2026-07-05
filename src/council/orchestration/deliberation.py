@@ -42,15 +42,25 @@ class StreamEvent:
 
 # ---------- model/toolset resolution (injection seams for tests) ----------
 
-def resolve_models() -> dict[str, Any]:
-    """Production per-agent model dict (research R4 — Gemini for all)."""
-    return {
-        "moderator": MODEL,
-        "panelist": MODEL,
-        "factchecker": MODEL,
-        "structurer": MODEL,
-        "synthesizer": MODEL,
-    }
+def resolve_models(binding: Any | None = None) -> dict[str, Any]:
+    """Per-role model dict resolved from the active provider (feature 002, FR-008).
+
+    Every role (moderator, panelist, factchecker, structurer, synthesizer)
+    receives the SAME resolved model for a run. A zero-arg call resolves the
+    effective ``RunBinding`` itself (production path); the web layer passes the
+    binding it snapshotted at stream start. When unconfigured, the legacy
+    Gemini-string map is returned so offline callers keep working. Google
+    resolves to the plain model string — byte-identical to before (FR-014).
+    (``SYNTH_MODEL`` in config.py is unused dead code; no separate wiring needed.)
+    """
+    from council import providers
+
+    if binding is None:
+        binding = providers.bind_run()
+    if binding is None:
+        return {role: MODEL for role in providers.ROLES}
+    model = providers.resolve_model(binding)  # one instance, shared across roles
+    return {role: model for role in providers.ROLES}
 
 
 def resolve_factcheck_toolset():

@@ -107,8 +107,19 @@ class CouncilApp:
 
 
 def has_api_key() -> bool:
-    """True if a GOOGLE_API_KEY is configured (launcher gate, contracts/web-ui.md)."""
+    """True if a GOOGLE_API_KEY is configured (legacy 001 helper; kept for compat)."""
     return google_api_key() is not None
+
+
+def any_provider_configured() -> bool:
+    """True if any provider is usable via UI/env precedence (feature 002 launcher gate).
+
+    The launcher no longer refuses to start without a key — this just informs the
+    friendly startup note; the page's get-started state handles the unconfigured case.
+    """
+    from council import providers
+
+    return providers.resolve_effective() is not None
 
 
 # Free-tier Gemini caps gemini-2.5-flash at ~5 req/min; a full deliberation fires

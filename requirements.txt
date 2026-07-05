@@ -1,4 +1,5 @@
-# Pinned dependencies for The Council (specs/001-the-council/plan.md)
+# Pinned dependencies for The Council
+#   (specs/001-the-council/plan.md; specs/002-multi-provider-ui/plan.md)
 # No dependencies beyond this list (constitution Principle I/III).
 google-adk==2.3.0
 google-genai==2.10.0
@@ -8,5 +9,8 @@ pydantic==2.13.4
 fastapi==0.138.2
 uvicorn==0.49.0
 python-dotenv==1.2.2
+# Multi-provider gateway (feature 002): the only supported ADK path to
+# OpenAI/Anthropic/OpenAI-compatible endpoints (google.adk.models.lite_llm.LiteLlm).
+litellm==1.91.0
 pytest==9.1.1
 pytest-asyncio==1.4.0

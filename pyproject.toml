@@ -31,7 +31,7 @@ council = "council.__main__:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"council" = ["agents/instructions/*.md", "web/static/*.html"]
+"council" = ["agents/instructions/*.md", "web/static/*.html", "web/static/*.js", "web/static/*.css"]
 
 # ---- Tooling config (T004) ----
 [tool.pytest.ini_options]
