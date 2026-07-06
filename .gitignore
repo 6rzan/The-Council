@@ -39,9 +39,11 @@ Thumbs.db
 # --- Project artifacts ---
 # Knowledge graph outputs (not part of the submission)
 graphify-out/
-# Scratch / non-spec working files
+# Local MCP code-graph cache
 .tokensave/
-No
 
-# local MCP code-graph cache
-.tokensave/
+# --- Local AI/dev tooling & internal notes (kept locally; not part of the submission) ---
+.pi/
+.specify/
+HANDOFF.md
+How to use Spec kit/
