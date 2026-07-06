@@ -1,10 +1,11 @@
 # The Council — Kaggle Submission Writeup
 
 **Track:** Freestyle (flagship demo questions flex toward *Agents for Good* /
-*Agents for Business*). **Status:** MVP complete; offline suite green (50
+*Agents for Business*). **Status:** feature-complete — 001 core deliberation
+engine + 002 multi-provider choice & live web UI; offline suite green (79
 tests); live path verified component-by-component against the real Gemini API.
 
-**Demo video:** _link pending — added on publication (T048)._
+**Demo video:** _PASTE THE PUBLIC VIDEO URL HERE before submitting (T048)._
 
 ## The problem
 
@@ -79,7 +80,7 @@ drawer (FR-008).
   server never starts without a key. A `scripts/secret-scan.sh` gate
   (pre-commit hook + GitHub Actions) fails if a real `.env` or an
   `AIza…`/`GOOGLE_API_KEY=` value is staged/committed; `.env` and `.claude/` are
-  gitignored. Gate verified clean: 0 secrets in 57 tracked files.
+  gitignored. Gate verified clean: 0 secrets in 99 tracked files.
 - **No persistence beyond session**: all deliberation state is in-memory
   (`InMemorySessionService`); nothing is written to disk (FR-012, Principle VII).
 - **Localhost only**: the server binds `127.0.0.1`.
@@ -91,6 +92,9 @@ drawer (FR-008).
 - **Wikipedia** via a local MCP stdio server using the keyless REST + MediaWiki
   Action API (`rest.wikipedia.org` summaries + `api.php` search). No key, no
   account. An 8-second timeout degrades to an empty result so the run never hangs.
+- **Optional (feature 002):** OpenAI / Anthropic / OpenCode Zen / any
+  OpenAI-compatible endpoint via ADK's `LiteLlm` wrapper — used only when the
+  operator selects a non-Google provider and supplies their own key in-page.
 
 ## Rationale & impact story
 
@@ -129,10 +133,11 @@ API (before the free-tier **daily** quota of ~20 requests for
   Transient 429/503s are retried with backoff (`run_agent_for_output`); a
   rate-limited fact-check degrades to an "uncertain" claim (spec Edge Cases
   explicitly allow source-unavailable degradation; the run never hangs).
-- **Single provider (Gemini-only)** per the frozen spec (R4, Principle II).
-  Multi-provider / per-agent model selection was requested but **deferred to
-  post-submission** (it would conflict with R4, Constitution Principle II, the
-  pinned dependency list, and the no-specs-modification rule).
+- **Provider default**: Gemini stays the built-in default per the 001 spec
+  (R4); feature **002** adds opt-in OpenAI / Anthropic / OpenCode Zen / custom
+  OpenAI-compatible endpoints via in-page Settings or env vars — credentials
+  are held in server memory only (never disk, logs, or git). OAuth account
+  sign-in is intentionally out of scope.
 - **Wikipedia-only** fact-check source (by design — keyless, reproducible).
 - **One `tool_call` SSE event per fact-check pass** (not per individual MCP
   call) — an honest approximation noted as a deviation.
@@ -146,7 +151,7 @@ python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\act
 pip install -r requirements.txt && pip install -e . --no-deps
 cp config/.env.example .env   # then set GOOGLE_API_KEY=<your free AI Studio key>
 council                       # opens http://127.0.0.1:8400
-pytest                        # 48 tests, fully offline & free
+pytest                        # 79 tests, fully offline & free
 ```
 
 See [README.md](../README.md) for the full quickstart, architecture, per-agent

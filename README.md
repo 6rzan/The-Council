@@ -247,11 +247,11 @@ tests/                       unit + smoke + e2e (offline, fake model + mocked MC
 
 Built by a four-person team for the **Google + Kaggle 5-Day AI Agents**
 capstone. The system was designed collaboratively; implementation, integration,
-and tooling were led by Tahaf.
+and tooling were led by Taha Fahd.
 
-- **Tahaf** — Team Lead & Lead Developer · GitHub [@6rzan](https://github.com/6rzan) · Kaggle [tahafahdthabit](https://www.kaggle.com/tahafahdthabit)
-- **Esam Alareqi** — Contributor · GitHub [@esammostafa9-cloud](https://github.com/esammostafa9-cloud) · Kaggle [esamalareqi](https://www.kaggle.com/esamalareqi)
-- **Kamila Ayub Khan** — Contributor · GitHub [@Slimyzz](https://github.com/Slimyzz) · Kaggle [kamilayubkhan](https://www.kaggle.com/kamilayubkhan)
+- **Taha Fahd** — Team Lead & Lead Developer · GitHub [@6rzan](https://github.com/6rzan) · Kaggle [tahafahdthabit](https://www.kaggle.com/tahafahdthabit)
+- **ESAM Al-AREQi** — Contributor · GitHub [@esammostafa9-cloud](https://github.com/esammostafa9-cloud) · Kaggle [esamalareqi](https://www.kaggle.com/esamalareqi)
+- **Kamil Ayub Khan** — Contributor · GitHub [@Slimyzz](https://github.com/Slimyzz) · Kaggle [kamilayubkhan](https://www.kaggle.com/kamilayubkhan)
 - **Ahmad Hemedany** — Contributor · GitHub [@hemedany](https://github.com/hemedany) · Kaggle [ahmadhemedany](https://www.kaggle.com/ahmadhemedany)
 
 ## License
