@@ -6,7 +6,7 @@
 [![MCP](https://img.shields.io/badge/MCP-1.28.1-green.svg)](https://modelcontextprotocol.io/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.138-009688.svg)](https://fastapi.tiangolo.com/)
 [![model: gemini-2.5-flash](https://img.shields.io/badge/model-gemini--2.5--flash-4285F4.svg)](https://ai.google.dev/)
-[![tests: 50 offline](https://img.shields.io/badge/tests-50%20offline-brightgreen.svg)](#run-the-tests-must-be-green-offline--fr-014)
+[![tests: 79 offline](https://img.shields.io/badge/tests-79%20offline-brightgreen.svg)](#run-the-tests-must-be-green-offline--fr-014)
 
 > **Ask a question → the Council assembles a bespoke expert panel → they debate
 > across rounds → claims are fact-checked against Wikipedia via MCP → you get a
@@ -23,11 +23,13 @@
   unsafe content & prompt-injection *before any panel runs*.
 - 🧠 **Session memory** — follow-ups build on prior verdicts via
   `InMemorySessionService` (in-memory only, nothing persisted).
-- 📡 **Live SSE streaming** — every event flows to a self-contained UI (inline
-  CSS/JS, no CDN) with an ordered trace drawer.
+- 📡 **Live SSE streaming** — every event flows to a live UI (stage timeline,
+  persona cards, fact-check badges; same-origin assets, no CDN, no build step).
+- 🔀 **Bring your own provider** — Gemini (default), OpenAI, Anthropic, OpenCode
+  Zen, or any OpenAI-compatible endpoint, chosen in-page; keys stay in memory.
 - 🧩 **Structured outputs** — typed `PanelRoster`, `PanelistTurn`, `Claim` &
   `VerdictBrief` end-to-end (ADK R6 gotcha handled).
-- ✅ **50 offline tests** — deterministic; no API key or browser required.
+- ✅ **79 offline tests** — deterministic; no API key or browser required.
 
 ```
  ┌──────────┐   ┌────────────┐   ┌───────────────┐   ┌────────────┐   ┌────────────┐
@@ -79,8 +81,9 @@ council            # or: python -m council
 ```
 
 Starts a local server (default `http://127.0.0.1:8400`) and opens your browser.
-If `GOOGLE_API_KEY` is missing the launcher explains what to set and exits code
-`3` — the server never starts without a key.
+With no provider configured, the page opens in a **get-started** state that walks
+you into Settings — the server always starts (exit codes: `0` clean shutdown,
+`1` unexpected startup error).
 
 In the page, ask:
 
@@ -112,6 +115,33 @@ content and refused; medical/legal advice is likewise refused.
 After a verdict, ask a follow-up in the same page. The page reuses its
 `session_id`, so the second verdict references the first. Session state is
 in-memory only and discarded when the server stops (FR-012).
+
+## Choose your AI provider (multi-provider — feature 002)
+
+The Council is no longer Gemini-only. Open **⚙ Settings** in the page to pick a
+provider and model, paste your own key, and run — no file edits, no restart:
+
+- **Google Gemini** (default), **OpenAI**, **Anthropic**, **OpenCode Zen**, or a
+  **Custom** OpenAI-compatible endpoint (local runtimes, gateways, …).
+- Credentials are held in **server memory only** — never written to disk, logs,
+  traces, or git, and masked in the UI once entered.
+- Every deliberation role (moderator, panelists, fact-checker, synthesizer) runs
+  on the provider/model you selected; the header chip shows it live for the run.
+
+Prefer environment variables? They still work (see `config/.env.example`):
+
+```bash
+COUNCIL_PROVIDER=openai        # google | openai | anthropic | opencode | custom
+COUNCIL_MODEL=gpt-4o-mini      # optional; provider default otherwise
+OPENAI_API_KEY=...             # the key var matching the chosen provider
+# custom OpenAI-compatible endpoints only:
+# COUNCIL_BASE_URL=http://localhost:11434/v1
+```
+
+**Precedence:** UI choice → environment default → built-in Gemini default. A key
+entered in the UI wins for the running process; a restart returns to env config.
+Non-Google providers route through ADK's own `LiteLlm` wrapper (adds the pinned
+`litellm` dependency). Full walkthrough: `specs/002-multi-provider-ui/quickstart.md`.
 
 ## Run one agent in isolation (FR-013/FR-015)
 
@@ -153,6 +183,8 @@ src/council/
                              FACTCHECK_TIMEOUT_S=8, MODEL=gemini-2.5-flash) + env loading
   app.py                     CouncilApp: ADK Runner + InMemorySessionService; run_agent_for_output
                              (with 429/503 retry-then-degrade so free-tier runs complete)
+  providers.py               multi-provider registry, precedence, memory-only credentials,
+                             validation probe + model factory (Gemini string | LiteLlm) — feature 002
   logging_config.py          dictConfig logging; TraceEvents reach both log and UI (FR-008)
   agents/
     moderator.py             guard callback (refuse/clarify) + recruit (output_schema=PanelRoster)
@@ -173,8 +205,10 @@ src/council/
     server.py                FastMCP stdio server (2 tools: search_wikipedia, get_summary)
     wikipedia.py             keyless REST + MediaWiki API; timeout→empty degradation
   web/
-    server.py                FastAPI: SSE stream (events 1:1 with StreamEvent kinds) + static page
-    static/index.html        self-contained UI (inline CSS/JS, no CDN, <500 lines)
+    server.py                FastAPI: SSE stream + /api/providers config API + static page
+    static/index.html        markup — live UI (same-origin app.js/style.css, no CDN, <500 lines)
+    static/app.js            SSE handling, stage timeline, settings panel, live rendering
+    static/style.css         dark animated theme (stage stepper, cards, verdict, settings)
 scripts/                     secret-scan.sh, run_one_agent.py
 tests/                       unit + smoke + e2e (offline, fake model + mocked MCP)
 ```
@@ -202,8 +236,9 @@ tests/                       unit + smoke + e2e (offline, fake model + mocked MC
   if a fact-check call is ultimately rate-limited it degrades to an "uncertain"
   claim (per the spec Edge Cases) and the run still completes. The capability is
   verified offline (mocked) and live in isolation.
-- **Single provider**: Gemini-only (per the frozen spec, R4/Principle II).
-  Multi-provider/per-agent-model selection was deferred to post-submission.
+- **Provider default**: Gemini stays the built-in default; OpenAI, Anthropic,
+  OpenCode Zen, and custom OpenAI-compatible endpoints are opt-in via Settings or
+  env (feature 002). OAuth account sign-in (US3) is intentionally out of scope.
 - **Wikipedia-only** fact-check source (by design — keyless, reproducible).
 - **Localhost only** — the server binds `127.0.0.1`; not production-deployed
   (a `Dockerfile`/Cloud Run path is sketched as an optional post-freeze task).

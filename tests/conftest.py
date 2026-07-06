@@ -25,6 +25,16 @@ from council.app import CouncilApp  # noqa: E402
 from tests import _fakes  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _isolate_provider_state():
+    """Reset the module-level active provider config around every test (feature 002)."""
+    from council import providers
+
+    providers.reset_active()
+    yield
+    providers.reset_active()
+
+
 @pytest.fixture()
 def app() -> CouncilApp:
     """A fresh in-memory CouncilApp (nothing persists across tests)."""
@@ -112,11 +122,18 @@ def web_client(app, scripted_models, monkeypatch):
     """
     from fastapi.testclient import TestClient
 
+    from council import providers
     from council.web import server as webserver
     from council.orchestration import deliberation as delib
 
+    # Bind a Google provider so the stream runs offline (feature 002 gate).
+    binding = providers.RunBinding(
+        provider_id="google", model="gemini-2.5-flash",
+        api_key="test-key", base_url=None, litellm_prefix=None,
+    )
+    monkeypatch.setattr(providers, "bind_run", lambda: binding, raising=True)
     # Inject a model provider that returns our scripted per-agent fakes.
-    monkeypatch.setattr(delib, "resolve_models", lambda: scripted_models, raising=False)
+    monkeypatch.setattr(delib, "resolve_models", lambda binding=None: scripted_models, raising=False)
     # Force the fact-checker to skip the real MCP subprocess (offline).
     monkeypatch.setattr(delib, "resolve_factcheck_toolset", lambda: None, raising=False)
 

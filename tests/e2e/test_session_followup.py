@@ -17,7 +17,13 @@ from tests.e2e.test_deliberation import _parse_sse
 
 def _client_with(app, models, monkeypatch) -> TestClient:
     """A TestClient wired with the given scripted models + no MCP toolset."""
-    monkeypatch.setattr(delib, "resolve_models", lambda: models, raising=False)
+    from council import providers
+    binding = providers.RunBinding(
+        provider_id="google", model="gemini-2.5-flash",
+        api_key="test-key", base_url=None, litellm_prefix=None,
+    )
+    monkeypatch.setattr(providers, "bind_run", lambda: binding, raising=True)
+    monkeypatch.setattr(delib, "resolve_models", lambda binding=None: models, raising=False)
     monkeypatch.setattr(delib, "resolve_factcheck_toolset", lambda: None, raising=False)
     return TestClient(webserver.create_app(app=app))
 

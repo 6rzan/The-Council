@@ -12,7 +12,7 @@ from tests.e2e.test_deliberation import _parse_sse
 def test_fallback_roster_completes_to_verdict(web_client, fallback_models, monkeypatch):
     # Re-point the web's model provider at the fallback script set.
     from council.orchestration import deliberation as delib
-    monkeypatch.setattr(delib, "resolve_models", lambda: fallback_models)
+    monkeypatch.setattr(delib, "resolve_models", lambda binding=None: fallback_models)
 
     with web_client.stream(
         "GET", "/api/deliberate/stream",

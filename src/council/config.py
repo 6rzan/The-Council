@@ -54,6 +54,32 @@ def google_api_key() -> str | None:
     return val or None
 
 
+def key_from_env(var: str) -> str | None:
+    """Generic env-key reader for any provider (feature 002).
+
+    Trimmed of surrounding whitespace/newlines (spec edge case). Reads through
+    the same ``_settings()`` cache as everything else, so ``reset_cache()``
+    covers it too. Returns None when unset or empty after trim.
+    """
+    val = (_settings().get(var, "") or "").strip()
+    return val or None
+
+
+def provider_env_default() -> tuple[str, str | None, str | None] | None:
+    """The environment-configured provider default (feature 002).
+
+    Returns ``(COUNCIL_PROVIDER, COUNCIL_MODEL_or_None, COUNCIL_BASE_URL_or_None)``
+    when ``COUNCIL_PROVIDER`` is set, else None. Does not itself check that the
+    provider's key is present — precedence resolution (providers.py) does that.
+    """
+    prov = (_settings().get("COUNCIL_PROVIDER", "") or "").strip()
+    if not prov:
+        return None
+    model = (_settings().get("COUNCIL_MODEL", "") or "").strip() or None
+    base = (_settings().get("COUNCIL_BASE_URL", "") or "").strip() or None
+    return (prov, model, base)
+
+
 def use_vertex() -> bool:
     """Whether to use the Vertex backend (default FALSE = AI Studio)."""
     return _settings().get("GOOGLE_GENAI_USE_VERTEXAI", "FALSE").strip().upper() == "TRUE"

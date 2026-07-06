@@ -40,6 +40,11 @@ def test_happy_path_sse_order(web_client):
         assert r.status_code == 200
         events = list(_parse_sse(r.iter_lines()))
 
+    # feature 002: every configured stream begins with a run_config event.
+    assert events[0][0] == "run_config"
+    assert events[0][1]["provider"] == "google"
+    events = events[1:]  # the rest of the 001 ordering is unchanged
+
     kinds = [k for k, _ in events]
     # exactly one terminal event, and it is the verdict
     assert kinds[-1] == "verdict"
