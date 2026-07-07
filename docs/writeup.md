@@ -76,8 +76,8 @@ drawer (FR-008).
   validated against their schemas; `strike_unsupported` ensures no unsupported
   claim is ever presented as established fact in the Verdict Brief.
 - **Secrets handling**: `GOOGLE_API_KEY` lives only in a gitignored `.env`
-  (loaded via python-dotenv); the launcher exits code 3 if it is missing so the
-  server never starts without a key. A `scripts/secret-scan.sh` gate
+  (loaded via python-dotenv); with no key configured the server starts in a
+  safe get-started state (feature 002) and UI-entered keys stay in memory only. A `scripts/secret-scan.sh` gate
   (pre-commit hook + GitHub Actions) fails if a real `.env` or an
   `AIza…`/`GOOGLE_API_KEY=` value is staged/committed; `.env` and `.claude/` are
   gitignored. Gate verified clean: 0 secrets in 99 tracked files.
